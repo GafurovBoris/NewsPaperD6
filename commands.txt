@@ -1,0 +1,72 @@
+from news.models import *
+for username in ('allnorm', 'master'):
+	User.objects.create_user(username)
+	Author.objects.create(user = User.objects.get(username = username))
+
+for category in ("Политика", "Город", "Спорт", "Технологии"):
+	Category.objects.create(category_name = category) 
+
+post1 = Post.objects.create(author=Author.objects.get(user=User.objects.get(username="allnorm")),
+                    type='AR',
+                    title="Тест-драйв китайского электрокара Skywell ET5",
+                    text="Внешний вид автомобиля разрабатывался международной командой во главе с экс-дизайнером Mercedes-Benz и Porsche Джейсоном Кларком Хиллом. 3D-вставка в передней части капота имитирует решетку радиатора. Светодиодная линия на пятой двери, спойлер и накладка бампера с имитацией диффузора придают облику динамики. «Логотип с подсветкой делает автомобиль заметным в потоке и добавляет яркости образу», — отмечается в рекламном проспекте. Куда бы ни приезжал Анатолий, местные жители живо интересовались электрокаром: «Как он называется? Кто производитель? Как заряжать?» Прохожие фотографировали, а таксисты завистливо провожали взглядом.")
+					
+PostCategory.objects.create(post = post1, category = Category.objects.get(category_name="Технологии"))
+PostCategory.objects.create(post = post1, category = Category.objects.get(category_name="Город"))
+
+
+post2 = Post.objects.create(author=Author.objects.get(user=User.objects.get(username="allnorm")),
+                    type='AR',
+                    title="Магазин у дома: как развивается стрит-ретейл в Петербурге",
+                    text="В новых районах Петербурга высокая конкуренция за коммерческие помещения на первых этажах. На один лот претендуют 3–5 компаний одного профиля. Такие данные приводит Анна Лапченко, руководитель торговой недвижимости NF Group в Северной столице. Это результат проводимой девелоперами концепции «город в городе»: окраины превращаются в самодостаточные локации, где есть всё необходимое для жизни. У тех, кто не работает в центре, гораздо меньше, чем раньше, причин ехать туда. Понимая, что качественный стрит-ретейл напрямую влияет на привлекательность жилых комплексов, девелоперы еще на этапе проектирования продумывают концепцию «встройки».")
+					
+PostCategory.objects.create(post = post2, category = Category.objects.get(category_name="Политика"))
+PostCategory.objects.create(post = post2, category = Category.objects.get(category_name="Город"))
+
+post3 = Post.objects.create(author=Author.objects.get(user=User.objects.get(username="master")),
+                    type='NW',
+                    title="«Что поделаешь, прототип». Министр финансов уехал на форум на новой Lada Aura — но с приключениями",
+                    text="Министр финансов Антон Силуанов уехал с делового завтрака Сбербанка утром 16 июня на прототипе нового автомобиля Lada Aura, протестировать который предложил глава АВТОВАЗа Максим Соколов. Как передает корреспондент «Фонтанки», вначале министр в компании главы автоконцерна сделал маневр вокруг гостиницы Airportcity plaza, в которой проходил завтрак. Затем новинку показали главе Сбербанка Герману Грефу. При демонстрации Соколов назвал автомобиль «младшим братом Aurus» и отметил, что локализация модели составляет 90%.")
+
+PostCategory.objects.create(post = post3, category = Category.objects.get(category_name="Политика"))
+PostCategory.objects.create(post = post3, category = Category.objects.get(category_name="Технологии"))
+
+comment1 = Comment.objects.create(post = post3, user = User.objects.get(username = "allnorm"), text = "Фуууу политика...")
+comment2 = Comment.objects.create(post = post1, user = User.objects.get(username = "master"), text = "Хорошая машина, думаю купить))))")
+comment3 = Comment.objects.create(post = post2, user = User.objects.get(username = "master"), text = "Неплохо куда развивается наш город")
+comment4 = Comment.objects.create(post = post2, user = User.objects.get(username = "allnorm"), text = "Я автор статьи, пишите своё мнение!")
+
+for _ in range(3):
+	comment1.like()
+
+for _ in range(4):
+	comment2.dislike()
+
+for _ in range(2):
+	comment3.like()
+
+comment4.like()
+
+for _ in range(3):
+	post1.dislike()
+
+for _ in range(4):
+	post2.like()
+
+for _ in range(2):
+	post3.like()
+	
+for username in ('allnorm', 'master'):
+	Author.objects.get(user = User.objects.get(username = username)).update_rating()
+	
+bestauthor = Author.objects.all().order_by('-rate')[0]
+print(f"Лучший автор - {bestauthor.user} с рейтингом {bestauthor.rate}")
+
+bestarticle = Post.objects.all().order_by('-rate')[0]
+print(f"Лучшая статья - {bestarticle.title}\n"
+      f"Рейтинг статьи - {bestarticle.rate}\n"
+      f"Автор статьи - {bestarticle.author.user}\n"
+      f"Дата добавления - {bestarticle.create_time}\n"
+      f"Превью статьи - {bestarticle.preview()}")
+	  
+print("Комментарии к статье:\n" + "\n".join(["Пользователь: " + comment.user.username + '\nТекст: ' + comment.text for comment in Comment.objects.filter(post=bestarticle)]))
